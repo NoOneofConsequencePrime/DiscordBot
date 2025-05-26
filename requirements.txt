@@ -1,1 +1,1 @@
-discord.py; python_version >= "3.13"
+discord.py; python_version >= "3.12"

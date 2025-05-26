@@ -58,11 +58,13 @@ async def change_perms(ctx):
             pending_role_setup[author.id] = guild.id
             try:
                 await author.send(f"Hello! Thanks for adding me to **{author.name}**.\n"
+                                  "On top of this role, anyone with administrator or manage server permissions can still access me. \n"
                                  "Please mention the role I should monitor (e.g., @Admin):")
             except discord.Forbidden:
                 if guild.system_channel:
                     await guild.system_channel.send(
-                        f"{author.mention}, please mention the role I should monitor (e.g., @Admin):")
+                        f"{author.mention}, please mention the role I should monitor (e.g., @Admin): \n"
+                        "On top of this role, anyone with administrator or manage server permissions can still access me. \n")
         else:
             return
     else:
@@ -75,11 +77,13 @@ async def on_guild_join(guild):
     if owner:
         pending_role_setup[owner.id] = guild.id
         try:
-            await owner.send(f"Hello! Thanks for adding me to **{guild.name}**.\n"
+            await owner.send(f"Hello! Thanks for adding me to **{guild.name}**.\n" 
+                             "On top of this role, anyone with administrator or manage server permissions can still access me. \n"
                              "Please mention the role I should monitor (e.g., @Admin):")
         except discord.Forbidden:
             if guild.system_channels:
-                await guild.system_channel.send(f"{owner.mention}, please mention the role I should monitor (e.g., @Admin):")
+                await guild.system_channel.send(f"{owner.mention}, please mention the role I should monitor (e.g., @Admin): \n"
+                                                "On top of this role, anyone with administrator or manage server permissions can still access me. \n")
     else:
         return
 
