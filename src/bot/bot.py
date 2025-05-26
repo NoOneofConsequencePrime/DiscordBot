@@ -4,7 +4,7 @@ import datetime
 import os
 import json
 from discord.ext import commands
-from discord.types.channel import VoiceChannel
+from discord import VoiceChannel
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -37,7 +37,7 @@ async def vc_connect(ctx):
     if ctx.guild.id in monitored_roles.keys() or ctx.author.guild_permissions.administrator or ctx.author.guild_permissions.manage_guild:
         check_role = monitored_roles[ctx.guild.id]
         if check_role in ctx.author.roles or ctx.author.guild_permissions.manage_guild or ctx.author.guild_permissions.administrator:
-            if ctx.author.voice.channel:
+            if ctx.author.voice and ctx.author.voice.channel:
                 vc = ctx.author.voice.channel
                 await vc.connect()
                 await ctx.send("Joined channel!")
@@ -60,7 +60,7 @@ async def change_perms(ctx):
                 await author.send(f"Hello! Thanks for adding me to **{author.name}**.\n"
                                  "Please mention the role I should monitor (e.g., @Admin):")
             except discord.Forbidden:
-                if guild.system_channels:
+                if guild.system_channel:
                     await guild.system_channel.send(
                         f"{author.mention}, please mention the role I should monitor (e.g., @Admin):")
         else:
@@ -97,10 +97,10 @@ async def on_message(message):
             await message.channel.send(f"Great! I'll monitor the **{role.name}** role.")
             del pending_role_setup[message.author.id]
 
-@bot.event
-async def on_ready():
-        
-    await bot.close()
+# @bot.event
+# async def on_ready():
+#
+#     await bot.close()
 
 bot.run(
     BOT_TOKEN
