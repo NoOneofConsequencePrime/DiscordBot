@@ -5,7 +5,9 @@ import os
 import json
 from discord.ext import commands
 from discord import VoiceChannel
+import gtts
 # import PyNaCl
+
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -36,7 +38,31 @@ async def ratelimit_safe(coro):
         raise
 
 
-@bot.command(name="join", help="Joins the channel you (invoker of the command) are currently in.")
+@bot.hybrid_command(name="say", description="Say the following text string in voice channel.")
+async def speak(ctx, *, args:str):
+    input = args
+    print(input)
+    if ctx.voice_client:
+        tts = gtts.gTTS(text=input, lang='en')
+        tts.save("tts.mp3")
+
+
+        def after_playing(error):
+            try:
+                os.remove("tts.mp3")
+                print("Temporary TTS file deleted.")
+            except Exception as e:
+                print(f"Error deleting file: {e}")
+            if error:
+                print(f"Error during playback: {error}")
+
+        audio = discord.FFmpegPCMAudio("tts.mp3", executable="C:\\Users\\John\\Downloads\\ffmpeg\\ffmpeg\\bin\\ffmpeg.exe")
+        ctx.voice_client.play(audio, after=after_playing)
+
+
+
+
+@bot.hybrid_command(name="join", description="Joins the channel you (invoker of the command) are currently in.")
 async def vc_connect(ctx):
     if ctx.guild.id in monitored_roles.keys() or ctx.author.guild_permissions.administrator or ctx.author.guild_permissions.manage_guild:
         check_role = monitored_roles.get(ctx.guild.id)
@@ -52,15 +78,14 @@ async def vc_connect(ctx):
     else:
         await ctx.send("You do not have the proper permissions for this command, or setup role permissions first!")
 
-@bot.command(name="stop", help="Forces the bot to leave the voice channel it is in.")
+@bot.hybrid_command(name="stop", description="Forces the bot to leave the voice channel it is in.")
 async def vc_disconnect(ctx):
-    vc = ctx.author.voice.channel
-    if vc:
-        await vc.voice_client.disconnect()
+    if ctx.voice_client:
+        await ctx.voice_client.disconnect()
     else:
         ctx.send("Please execute this command from inside the voice channel the bot is in.")
 
-@bot.command(name="change_role_permissions", help="Changes what roles the bot listens to, aside from those with administrator permissions or manage server permissions.")
+@bot.hybrid_command(name="change_role_permissions", description="Changes roles the bot listens to, aside from administrator or manage server permissions.")
 async def change_perms(ctx):
     if ctx.author.guild_permissions.administrator or ctx.author.guild_permissions.manage_guild:
         author = ctx.author
@@ -121,10 +146,19 @@ async def on_message(message):
     await bot.process_commands(message)
 
 
-@bot.command()
+@bot.hybrid_command(description="Check bot latency.")
 async def ping(ctx):
     await ctx.send("Pong!")
     await ctx.send(monitored_roles)
+
+@bot.command()
+async def sync(ctx):
+    if ctx.author.id == 649782084847665195:
+        await bot.tree.sync()
+        await bot.tree.sync(guild = ctx.guild)
+        await ctx.send("Commands synced!")
+    else:
+        await ctx.send("You do not have permission to use this command.")
 
 
 @bot.event
