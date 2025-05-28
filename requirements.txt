@@ -1,2 +1,3 @@
-Python 3.13
-discord.py
+discord; python_version >= "3.12"
+PyNaCl; python_version >= "3.12"
+gtts; python_version >= "3.12"
