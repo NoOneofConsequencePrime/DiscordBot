@@ -56,7 +56,7 @@ async def speak(ctx, *, args:str):
             if error:
                 print(f"Error during playback: {error}")
 
-        audio = discord.FFmpegPCMAudio("tts.mp3", executable="C:\\Users\\John\\Downloads\\ffmpeg\\ffmpeg\\bin\\ffmpeg.exe")
+        audio = discord.FFmpegPCMAudio("tts.mp3", executable="./dependencies/ffmpeg/bin/ffmpeg.exe")
         ctx.voice_client.play(audio, after=after_playing)
 
 
