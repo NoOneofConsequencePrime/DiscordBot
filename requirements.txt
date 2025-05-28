@@ -1,1 +1,2 @@
-discord.py; python_version >= "3.12"
+discord; python_version >= "3.12"
+PyNaCl; python_version >= "3.12"
