@@ -62,7 +62,7 @@ async def speak(ctx, *, args:str):
             if error:
                 print(f"Error during playback: {error}")
 
-        audio = discord.FFmpegPCMAudio(filename, executable="../../dependencies/ffmpeg/bin/ffmpeg.exe")
+        audio = discord.FFmpegPCMAudio(filename, executable="../../dependencies/ffmpeg/bin/ffmpeg.exe", options="-filter:a 'atempo=1.4'")
         ctx.voice_client.play(audio, after=after_playing)
 
 
@@ -114,6 +114,17 @@ async def change_perms(ctx):
 
 
 @bot.event
+async def on_voice_state_update(member, before, after):
+    if member.bot:
+        return
+
+    voice_client = discord.utils.get(bot.voice_clients, guild=member.guild)
+
+    if voice_client and len(voice_client.channel.members) == 1:
+        await voice_client.disconnect()
+        print(f"Disconnected from {voice_client.channel} due to inactivity.")
+
+@bot.event
 async def on_guild_join(guild):
     owner = guild.owner
     if owner:
@@ -138,7 +149,7 @@ async def on_message(message):
             if guild is None:
                 return
 
-            role_name = message.content.strip().lstrip("@")  # Clean up "@Admin" to "Admin"
+            role_name = message.content.strip().lstrip("@")
             role = discord.utils.find(lambda r: r.name == role_name, guild.roles)
 
             if role:
