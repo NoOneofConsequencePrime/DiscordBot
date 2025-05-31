@@ -23,7 +23,7 @@ monitored_roles = {}
 
 TARGET_GUILD_ID = ""
 USER_ID = ""
-BOT_TOKEN = ""
+BOT_TOKEN = "MTM2Nzg5NTE1ODY5OTMzMTY1NA.Gbduut.Fdk6ot29-GTptSnHe-oht2C52iH_AAN0StBwV8"
 LOG_FILE = ""
 
 async def ratelimit_safe(coro):
