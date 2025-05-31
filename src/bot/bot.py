@@ -6,6 +6,7 @@ import json
 from discord.ext import commands
 from discord import VoiceChannel
 import gtts
+import uuid
 # import PyNaCl
 
 
@@ -23,7 +24,7 @@ monitored_roles = {}
 
 TARGET_GUILD_ID = ""
 USER_ID = ""
-BOT_TOKEN = "MTM2Nzg5NTE1ODY5OTMzMTY1NA.Gbduut.Fdk6ot29-GTptSnHe-oht2C52iH_AAN0StBwV8"
+BOT_TOKEN = ""
 LOG_FILE = ""
 
 async def ratelimit_safe(coro):
@@ -38,25 +39,30 @@ async def ratelimit_safe(coro):
         raise
 
 
+def generate_tts(text:str, filename:str):
+    tts = gtts.gTTS(text=text, lang='en')
+    tts.save(filename)
+
+
 @bot.hybrid_command(name="say", description="Say the following text string in voice channel.")
 async def speak(ctx, *, args:str):
     input = args
     print(input)
     if ctx.voice_client:
-        tts = gtts.gTTS(text=input, lang='en')
-        tts.save("tts.mp3")
+        filename = f"tts_{uuid.uuid4().hex}.mp3"
+        await asyncio.to_thread(generate_tts, args, filename)
 
 
         def after_playing(error):
             try:
-                os.remove("tts.mp3")
+                os.remove(filename)
                 print("Temporary TTS file deleted.")
             except Exception as e:
                 print(f"Error deleting file: {e}")
             if error:
                 print(f"Error during playback: {error}")
 
-        audio = discord.FFmpegPCMAudio("tts.mp3", executable="./dependencies/ffmpeg/bin/ffmpeg.exe")
+        audio = discord.FFmpegPCMAudio(filename, executable="../../dependencies/ffmpeg/bin/ffmpeg.exe")
         ctx.voice_client.play(audio, after=after_playing)
 
 
