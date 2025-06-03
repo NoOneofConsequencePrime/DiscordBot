@@ -62,7 +62,9 @@ def queue_run():
                 if error:
                     print(f"Error during playback: {error}")
 
-            audio = discord.FFmpegPCMAudio(filename, executable="../../dependencies/ffmpeg/bin/ffmpeg.exe", options="-filter:a 'atempo=1.4'")
+            BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # This will point to libs/
+            FFMPEG_PATH = os.path.join(BASE_DIR, "dependencies", "ffmpeg", "bin", "ffmpeg.exe")
+            audio = discord.FFmpegPCMAudio(filename, executable=FFMPEG_PATH, options="-filter:a 'atempo=1.4'")
             ctx.voice_client.play(audio, after=after_playing)
             while ctx.voice_client.is_playing():
                 time.sleep(1)
