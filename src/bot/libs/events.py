@@ -50,21 +50,6 @@ async def on_message(message):
     await bot.process_commands(message)
 
 
-@bot.hybrid_command(description="Check bot latency.")
-async def ping(ctx):
-    await ctx.send("Pong!")
-    await ctx.send(monitored_roles)
-
-@bot.command()
-async def sync(ctx):
-    if ctx.author.id == 649782084847665195:
-        await bot.tree.sync()
-        await bot.tree.sync(guild = ctx.guild)
-        await ctx.send("Commands synced!")
-    else:
-        await ctx.send("You do not have permission to use this command.")
-
-
 @bot.event
 async def on_ready():
     pass
