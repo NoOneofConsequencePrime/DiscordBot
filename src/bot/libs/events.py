@@ -69,3 +69,5 @@ async def sync(ctx):
 async def on_ready():
     pass
     # await bot.close()
+
+

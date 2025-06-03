@@ -12,7 +12,11 @@ async def speak(ctx, *, args:str):
 async def pause(ctx):
     if ctx.voice_client and ctx.voice_client.is_playing():
         ctx.voice_client.stop()
-        clear_queue(queue)
+        clear_queue()
+        for filename in os.listdir("temp_files/"):
+            file_path = os.path.join("temp_files/", filename)
+            if os.path.isfile(file_path):
+                try_remove(file_path)
 
 @bot.hybrid_command(name="join", description="Joins the channel you (invoker of the command) are currently in.")
 async def vc_connect(ctx):

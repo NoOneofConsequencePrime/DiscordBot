@@ -38,24 +38,33 @@ def generate_tts(text:str, filename:str):
     tts = gtts.gTTS(text=text, lang='en')
     tts.save(filename)
 
-def clear_queue(q):
-    while not q.empty():
+def clear_queue():
+    while not queue.empty():
         try:
-            q.get_nowait()
-            q.task_done()
+            queue.get_nowait()
+            queue.task_done()
         except Exception:
             break
+
+def try_remove(file_path, retries=3, delay=1):
+    for _ in range(retries):
+        try:
+            os.remove(file_path)
+            return
+        except PermissionError:
+            time.sleep(delay)
 
 def queue_run():
     while True:
         ctx, tts_input = queue.get()
         if ctx.voice_client:
             filename = f"tts_{uuid.uuid4().hex}.mp3"
+            filename = "temp_files/" + filename
             generate_tts(tts_input, filename)
 
             def after_playing(error):
                 try:
-                    os.remove(filename)
+                    try_remove(filename)
                     print("Temporary TTS file deleted.")
                 except Exception as e:
                     print(f"Error deleting file: {e}")
