@@ -52,7 +52,14 @@ async def on_message(message):
 
 @bot.event
 async def on_ready():
-    pass
+    with open("data_files/settings.json", "r") as f:
+        data = json.load(f)
+        global pending_role_setup
+        global monitored_roles
+        global profanity_status
+        pending_role_setup.update(data.get("pending_role_setup", {}))
+        monitored_roles.update(data.get("monitored_roles", {}))
+        profanity_status.extend(data.get("profanity_status", []))
     # await bot.close()
 
 

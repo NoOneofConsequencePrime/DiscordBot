@@ -5,13 +5,19 @@ import uuid
 import os
 import time
 import queue as thread_queue
+import json
 from discord.ext import commands
+from profanityfilter import ProfanityFilter
+import atexit
 
+pf = ProfanityFilter()
 queue = thread_queue.Queue()
 
 #write these into a file to make the bot restart-proof
 pending_role_setup = {}
 monitored_roles = {}
+profanity_status = []
+
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -20,6 +26,8 @@ intents.guilds = True
 # intents.members = True
 intents.guild_messages = True
 bot = commands.Bot(command_prefix="!", intents=intents)
+
+
 
 
 async def ratelimit_safe(coro):
@@ -33,6 +41,15 @@ async def ratelimit_safe(coro):
             return await ratelimit_safe(coro)
         raise
 
+async def save_on_exit_async():
+    with open("data_files/settings.json", "w") as f:
+        json.dump({"pending_role_setup": pending_role_setup, "monitored_roles": monitored_roles, "profanity_status": profanity_status}, f)
+
+def save_on_exit():
+    asyncio.run(save_on_exit_async())
+
+def profanity_check(text:str):
+    return pf.is_profane(input_text=text)
 
 def generate_tts(text:str, filename:str):
     tts = gtts.gTTS(text=text, lang='en')

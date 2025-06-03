@@ -4,11 +4,27 @@ import threading
 @bot.hybrid_command(name="say", description="Say the following text string in voice channel.", help="Say the following text string in voice channel.")
 async def speak(ctx, *, args:str):
     if ctx.voice_client:
-        queue.put((ctx, args))
+        if ctx.guild.id in profanity_status:
+            if not profanity_check(args):
+                queue.put((ctx, args))
+            else:
+                await ctx.send("Profanity filter detected a bad word. If you believe this is an error, please screenshot and send to the bot developer.")
+        else:
+            queue.put((ctx, args))
     else:
         await ctx.send("Please use `/join` to have me join a voice channel first.")
 
-@bot.hybrid_command(name="pause", description="Stops the current voice message", help="Stops the current voice message")
+@bot.hybrid_command(name="toggle_filter", description="Toggle the profanity filter.", help="Toggle the profanity filter.")
+async def toggle(ctx):
+    if ctx.guild.id not in profanity_status:
+        profanity_status.append(ctx.guild.id)
+        await ctx.send("Turned filter on.")
+    else:
+        profanity_status.remove(ctx.guild.id)
+        await ctx.send("Turned filter off.")
+
+
+@bot.hybrid_command(name="pause", description="Stops the current voice message.", help="Stops the current voice message and clears the voice queue. Any unread !say commands will not be read.")
 async def pause(ctx):
     if ctx.voice_client and ctx.voice_client.is_playing():
         ctx.voice_client.stop()
@@ -40,7 +56,7 @@ async def vc_disconnect(ctx):
     if ctx.voice_client:
         await ctx.voice_client.disconnect()
     else:
-        ctx.send("Please execute this command from inside the voice channel the bot is in.")
+        await ctx.send("Please execute this command from inside the voice channel the bot is in.")
 
 @bot.hybrid_command(name="change_role_permissions", description="Changes roles the bot listens to, aside from administrator or manage server permissions.", help="Changes roles the bot listens to, must be used by someone with administrator or manage server permissions. Users with administrator or manage server permissions retain their ability to use the command.")
 async def change_perms(ctx):
@@ -67,7 +83,7 @@ async def change_perms(ctx):
 async def ping(ctx):
     await ctx.send("Pong!")
     await ctx.send("My latency is: " + str(bot.latency*1000) + " ms")
-    await ctx.send(monitored_roles)
+    await ctx.send(profanity_status)
 
 @bot.hybrid_command(description="For bot developer use only. Do not Invoke.", help="Syncs the tree across all discord guilds and the guild that the bot is in. The global sync can take up to an hour but the guild sync should only take minutes. Do not use unless your are a developer of the Bot.")
 async def sync(ctx):
