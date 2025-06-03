@@ -47,7 +47,15 @@ async def ratelimit_safe(coro):
 def generate_tts(text:str, filename:str):
     tts = gtts.gTTS(text=text, lang='en')
     tts.save(filename)
-    
+
+def clear_queue(q):
+    while not q.empty():
+        try:
+            q.get_nowait()
+            q.task_done()
+        except Exception:
+            break
+
 def queue_run():
     while True:
         ctx, tts_input = queue.get()
@@ -82,7 +90,6 @@ async def pause(ctx):
     if ctx.voice_client and ctx.voice_client.is_playing():
         ctx.voice_client.stop()
         clear_queue(queue)
-
 
 @bot.hybrid_command(name="join", description="Joins the channel you (invoker of the command) are currently in.")
 async def vc_connect(ctx):
