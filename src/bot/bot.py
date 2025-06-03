@@ -27,7 +27,7 @@ monitored_roles = {}
 
 TARGET_GUILD_ID = ""
 USER_ID = ""
-BOT_TOKEN = "MTM2Nzg5NTE1ODY5OTMzMTY1NA.GW3ntR.zqcuUiPLmP_jqxY3nRWV0VjNi_HPcAGiBLEZwo"
+BOT_TOKEN = ""
 LOG_FILE = ""
 
 queue = thread_queue.Queue()
