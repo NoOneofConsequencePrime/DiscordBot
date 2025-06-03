@@ -7,6 +7,9 @@ from discord.ext import commands
 from discord import VoiceChannel
 import gtts
 import uuid
+import threading
+import queue as thread_queue
+import time
 # import PyNaCl
 
 
@@ -24,8 +27,10 @@ monitored_roles = {}
 
 TARGET_GUILD_ID = ""
 USER_ID = ""
-BOT_TOKEN = ""
+BOT_TOKEN = "MTM2Nzg5NTE1ODY5OTMzMTY1NA.GW3ntR.zqcuUiPLmP_jqxY3nRWV0VjNi_HPcAGiBLEZwo"
 LOG_FILE = ""
+
+queue = thread_queue.Queue()
 
 async def ratelimit_safe(coro):
     try:
@@ -42,30 +47,41 @@ async def ratelimit_safe(coro):
 def generate_tts(text:str, filename:str):
     tts = gtts.gTTS(text=text, lang='en')
     tts.save(filename)
+    
+def queue_run():
+    while True:
+        ctx, tts_input = queue.get()
+        if ctx.voice_client:
+            filename = f"tts_{uuid.uuid4().hex}.mp3"
+            generate_tts(tts_input, filename)
 
+            def after_playing(error):
+                try:
+                    os.remove(filename)
+                    print("Temporary TTS file deleted.")
+                except Exception as e:
+                    print(f"Error deleting file: {e}")
+                if error:
+                    print(f"Error during playback: {error}")
+
+            audio = discord.FFmpegPCMAudio(filename, executable="../../dependencies/ffmpeg/bin/ffmpeg.exe", options="-filter:a 'atempo=1.4'")
+            ctx.voice_client.play(audio, after=after_playing)
+            while ctx.voice_client.is_playing():
+                time.sleep(1)
+        queue.task_done()
 
 @bot.hybrid_command(name="say", description="Say the following text string in voice channel.")
 async def speak(ctx, *, args:str):
-    input = args
-    print(input)
     if ctx.voice_client:
-        filename = f"tts_{uuid.uuid4().hex}.mp3"
-        await asyncio.to_thread(generate_tts, args, filename)
+        queue.put((ctx, args))
+    else:
+        await ctx.send("Please use `/join` to have me join a voice channel first.")
 
-
-        def after_playing(error):
-            try:
-                os.remove(filename)
-                print("Temporary TTS file deleted.")
-            except Exception as e:
-                print(f"Error deleting file: {e}")
-            if error:
-                print(f"Error during playback: {error}")
-
-        audio = discord.FFmpegPCMAudio(filename, executable="../../dependencies/ffmpeg/bin/ffmpeg.exe", options="-filter:a 'atempo=1.4'")
-        ctx.voice_client.play(audio, after=after_playing)
-
-
+@bot.hybrid_command(name="pause", description="Stops the current voice message")
+async def pause(ctx):
+    if ctx.voice_client and ctx.voice_client.is_playing():
+        ctx.voice_client.stop()
+        clear_queue(queue)
 
 
 @bot.hybrid_command(name="join", description="Joins the channel you (invoker of the command) are currently in.")
@@ -76,6 +92,7 @@ async def vc_connect(ctx):
             if ctx.author.voice and ctx.author.voice.channel:
                 vc = ctx.author.voice.channel
                 await vc.connect()
+                threading.Thread(target=queue_run, daemon=True).start()
                 # await ctx.send("Joined channel!")
             else:
                 await ctx.send("Please join a channel first!")
@@ -111,7 +128,6 @@ async def change_perms(ctx):
             return
     else:
         await ctx.send("You need administrator or manage server permissions to execute this command.")
-
 
 @bot.event
 async def on_voice_state_update(member, before, after):
