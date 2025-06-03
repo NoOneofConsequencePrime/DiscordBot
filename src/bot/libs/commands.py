@@ -23,6 +23,8 @@ async def toggle(ctx):
         profanity_status.remove(ctx.guild.id)
         await ctx.send("Turned filter off.")
 
+    await save_on_exit_async()
+
 
 @bot.hybrid_command(name="pause", description="Stops the current voice message.", help="Stops the current voice message and clears the voice queue. Any unread !say commands will not be read.")
 async def pause(ctx):
