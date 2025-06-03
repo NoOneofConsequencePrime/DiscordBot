@@ -1,4 +1,4 @@
-from commands import *
+from .commands import *
 
 @bot.event
 async def on_voice_state_update(member, before, after):

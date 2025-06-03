@@ -1,4 +1,4 @@
-from events import *
+from src.bot.libs.events import *
 
 TARGET_GUILD_ID = ""
 USER_ID = ""

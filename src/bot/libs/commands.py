@@ -1,4 +1,4 @@
-from helper import *
+from .helper import *
 import threading
 
 @bot.hybrid_command(name="say", description="Say the following text string in voice channel.")
